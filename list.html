@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Registros{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <p class="eyebrow">Historial</p>
+    <h1>Consultas registradas</h1>
+    <p class="subtitle">{{ consultas|length }} registro{{ 's' if consultas|length != 1 }} encontrado{{ 's' if consultas|length != 1 }}.</p>
+  </div>
+  <a href="{{ url_for('index') }}" class="btn btn-primary btn-compact">+ Nueva consulta</a>
+</div>
+
+<form method="GET" action="{{ url_for('listado') }}" class="search-bar">
+  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+  </svg>
+  <input type="search" name="q" value="{{ query }}" placeholder="Buscar por nombre, apellido o documento...">
+  {% if query %}<a href="{{ url_for('listado') }}" class="clear-search">Limpiar</a>{% endif %}
+</form>
+
+{% if consultas %}
+<div class="records-grid">
+  {% for c in consultas %}
+  <a href="{{ url_for('detalle', consulta_id=c['id']) }}" class="record-card">
+    <div class="record-card-top">
+      <div class="avatar" aria-hidden="true">{{ c['nombres'][0] }}{{ c['apellidos'][0] }}</div>
+      <div class="record-id">
+        <h3>{{ c['nombres'] }} {{ c['apellidos'] }}</h3>
+        <p>{{ c['tipo_documento'] }} · {{ c['numero_documento'] }}</p>
+      </div>
+    </div>
+    <div class="record-meta">
+      <span><strong>{{ c['fecha_nacimiento']|edad }}</strong> años · {{ c['sexo'] }}</span>
+      <span class="record-date">{{ c['fecha_registro'][:16].replace('T', ' ') }}</span>
+    </div>
+    <p class="record-motivo">{{ c['motivo_consulta'] }}</p>
+    <div class="record-vitals">
+      {% if c['presion_sistolica'] and c['presion_diastolica'] %}
+        <span class="chip">PA {{ c['presion_sistolica'] }}/{{ c['presion_diastolica'] }}</span>
+      {% endif %}
+      {% if c['frecuencia_cardiaca'] %}<span class="chip">FC {{ c['frecuencia_cardiaca'] }}</span>{% endif %}
+      {% if c['temperatura'] %}<span class="chip">{{ c['temperatura'] }}°C</span>{% endif %}
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <p>{% if query %}No se encontraron consultas para "{{ query }}".{% else %}Todavía no hay consultas registradas.{% endif %}</p>
+  <a href="{{ url_for('index') }}" class="btn btn-primary">Registrar la primera consulta</a>
+</div>
+{% endif %}
+{% endblock %}
