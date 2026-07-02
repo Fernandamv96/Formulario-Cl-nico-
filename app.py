@@ -9,7 +9,7 @@ Persistencia en SQLite (archivo local, sin servidor externo).
 import sqlite3
 from datetime import datetime, date
 from pathlib import Path
-
+import os
 from flask import Flask, render_template, request, redirect, url_for, flash, g, jsonify
 
 BASE_DIR = Path(__file__).resolve().parent
