@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+{% block title %}Nueva consulta{% endblock %}
+
+{% macro field_error(name) %}
+  {% if errors.get(name) %}<span class="field-error">{{ errors[name] }}</span>{% endif %}
+{% endmacro %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <p class="eyebrow">Registro de atención</p>
+    <h1>Nueva consulta clínica</h1>
+    <p class="subtitle">Completa los datos del paciente, antecedentes, signos vitales y motivo de consulta.</p>
+  </div>
+</div>
+
+<form method="POST" action="{{ url_for('guardar') }}" class="clinical-form" novalidate id="clinicalForm">
+
+  <div class="form-grid">
+
+    <!-- ============ DATOS DEL PACIENTE ============ -->
+    <section class="card" data-section="paciente">
+      <div class="card-head">
+        <span class="card-index">01</span>
+        <div>
+          <h2>Datos del paciente</h2>
+          <p>Identificación y datos de contacto.</p>
+        </div>
+      </div>
+      <div class="card-body grid-2">
+        <div class="field">
+          <label for="nombres">Nombres <em>*</em></label>
+          <input type="text" id="nombres" name="nombres" required maxlength="80"
+                 value="{{ data.get('nombres','') }}" placeholder="Ej. María José">
+          {{ field_error('nombres') }}
+        </div>
+        <div class="field">
+          <label for="apellidos">Apellidos <em>*</em></label>
+          <input type="text" id="apellidos" name="apellidos" required maxlength="80"
+                 value="{{ data.get('apellidos','') }}" placeholder="Ej. Fernández Rojas">
+          {{ field_error('apellidos') }}
+        </div>
+        <div class="field">
+          <label for="tipo_documento">Tipo de documento <em>*</em></label>
+          <select id="tipo_documento" name="tipo_documento" required>
+            <option value="">Selecciona...</option>
+            {% for t in ['Cédula/RUT', 'Pasaporte', 'DNI', 'Otro'] %}
+              <option value="{{ t }}" {{ 'selected' if data.get('tipo_documento') == t }}>{{ t }}</option>
+            {% endfor %}
+          </select>
+          {{ field_error('tipo_documento') }}
+        </div>
+        <div class="field">
+          <label for="numero_documento">Número de documento <em>*</em></label>
+          <input type="text" id="numero_documento" name="numero_documento" required maxlength="30"
+                 value="{{ data.get('numero_documento','') }}" placeholder="Ej. 12.345.678-9">
+          {{ field_error('numero_documento') }}
+        </div>
+        <div class="field">
+          <label for="fecha_nacimiento">Fecha de nacimiento <em>*</em></label>
+          <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" required
+                 value="{{ data.get('fecha_nacimiento','') }}" max="{{ today }}">
+          {{ field_error('fecha_nacimiento') }}
+        </div>
+        <div class="field">
+          <label for="sexo">Sexo <em>*</em></label>
+          <select id="sexo" name="sexo" required>
+            <option value="">Selecciona...</option>
+            {% for s in ['Femenino', 'Masculino', 'Otro'] %}
+              <option value="{{ s }}" {{ 'selected' if data.get('sexo') == s }}>{{ s }}</option>
+            {% endfor %}
+          </select>
+          {{ field_error('sexo') }}
+        </div>
+        <div class="field">
+          <label for="telefono">Teléfono</label>
+          <input type="tel" id="telefono" name="telefono" maxlength="20"
+                 value="{{ data.get('telefono','') }}" placeholder="Ej. +56 9 1234 5678">
+          {{ field_error('telefono') }}
+        </div>
+        <div class="field">
+          <label for="email">Correo electrónico</label>
+          <input type="email" id="email" name="email" maxlength="120"
+                 value="{{ data.get('email','') }}" placeholder="paciente@correo.com">
+          {{ field_error('email') }}
+        </div>
+        <div class="field field-span-2">
+          <label for="direccion">Dirección</label>
+          <input type="text" id="direccion" name="direccion" maxlength="160"
+                 value="{{ data.get('direccion','') }}" placeholder="Calle, número, comuna/ciudad">
+          {{ field_error('direccion') }}
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ANTECEDENTES ============ -->
+    <section class="card" data-section="antecedentes">
+      <div class="card-head">
+        <span class="card-index">02</span>
+        <div>
+          <h2>Antecedentes</h2>
+          <p>Historia clínica relevante del paciente.</p>
+        </div>
+      </div>
+      <div class="card-body grid-2">
+        <div class="field">
+          <label for="antecedentes_personales">Antecedentes personales</label>
+          <textarea id="antecedentes_personales" name="antecedentes_personales" rows="3"
+                    placeholder="Enfermedades crónicas, hospitalizaciones previas...">{{ data.get('antecedentes_personales','') }}</textarea>
+        </div>
+        <div class="field">
+          <label for="antecedentes_familiares">Antecedentes familiares</label>
+          <textarea id="antecedentes_familiares" name="antecedentes_familiares" rows="3"
+                    placeholder="Enfermedades hereditarias relevantes...">{{ data.get('antecedentes_familiares','') }}</textarea>
+        </div>
+        <div class="field">
+          <label for="alergias">Alergias</label>
+          <textarea id="alergias" name="alergias" rows="2"
+                    placeholder="Medicamentos, alimentos, otras sustancias...">{{ data.get('alergias','') }}</textarea>
+        </div>
+        <div class="field">
+          <label for="medicamentos_actuales">Medicamentos actuales</label>
+          <textarea id="medicamentos_actuales" name="medicamentos_actuales" rows="2"
+                    placeholder="Nombre, dosis y frecuencia...">{{ data.get('medicamentos_actuales','') }}</textarea>
+        </div>
+        <div class="field field-span-2">
+          <label for="antecedentes_quirurgicos">Antecedentes quirúrgicos</label>
+          <textarea id="antecedentes_quirurgicos" name="antecedentes_quirurgicos" rows="2"
+                    placeholder="Cirugías previas y fechas aproximadas...">{{ data.get('antecedentes_quirurgicos','') }}</textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SIGNOS VITALES ============ -->
+    <section class="card" data-section="vitales">
+      <div class="card-head">
+        <span class="card-index">03</span>
+        <div>
+          <h2>Signos vitales</h2>
+          <p>Mediciones tomadas al momento de la consulta.</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="vitals-strip">
+          <div class="vital-unit" data-vital="presion">
+            <span class="vital-label">Presión arterial</span>
+            <div class="vital-pair">
+              <input type="number" name="presion_sistolica" min="0" max="300" inputmode="numeric"
+                     value="{{ data.get('presion_sistolica','') }}" placeholder="120" class="vital-input">
+              <span class="vital-sep">/</span>
+              <input type="number" name="presion_diastolica" min="0" max="300" inputmode="numeric"
+                     value="{{ data.get('presion_diastolica','') }}" placeholder="80" class="vital-input">
+            </div>
+            <span class="vital-unit-label">mmHg</span>
+          </div>
+          <div class="vital-unit" data-vital="fc">
+            <span class="vital-label">Frecuencia cardíaca</span>
+            <input type="number" name="frecuencia_cardiaca" min="0" max="300" inputmode="numeric"
+                   value="{{ data.get('frecuencia_cardiaca','') }}" placeholder="72" class="vital-input vital-input-solo">
+            <span class="vital-unit-label">lpm</span>
+          </div>
+          <div class="vital-unit" data-vital="fr">
+            <span class="vital-label">Frecuencia respiratoria</span>
+            <input type="number" name="frecuencia_respiratoria" min="0" max="120" inputmode="numeric"
+                   value="{{ data.get('frecuencia_respiratoria','') }}" placeholder="16" class="vital-input vital-input-solo">
+            <span class="vital-unit-label">rpm</span>
+          </div>
+          <div class="vital-unit" data-vital="temp">
+            <span class="vital-label">Temperatura</span>
+            <input type="number" name="temperatura" min="0" max="45" step="0.1"
+                   value="{{ data.get('temperatura','') }}" placeholder="36.5" class="vital-input vital-input-solo">
+            <span class="vital-unit-label">°C</span>
+          </div>
+          <div class="vital-unit" data-vital="sat">
+            <span class="vital-label">Saturación O₂</span>
+            <input type="number" name="saturacion_oxigeno" min="0" max="100" inputmode="numeric"
+                   value="{{ data.get('saturacion_oxigeno','') }}" placeholder="98" class="vital-input vital-input-solo">
+            <span class="vital-unit-label">%</span>
+          </div>
+        </div>
+        <div class="grid-2 vitals-extra">
+          <div class="field">
+            <label for="peso">Peso</label>
+            <input type="number" id="peso" name="peso" min="0" max="500" step="0.1"
+                   value="{{ data.get('peso','') }}" placeholder="Ej. 68.5">
+            <span class="hint">kg</span>
+          </div>
+          <div class="field">
+            <label for="talla">Talla</label>
+            <input type="number" id="talla" name="talla" min="0" max="3" step="0.01"
+                   value="{{ data.get('talla','') }}" placeholder="Ej. 1.70">
+            <span class="hint">metros</span>
+          </div>
+        </div>
+        {% for f in ['presion_sistolica','presion_diastolica','frecuencia_cardiaca','frecuencia_respiratoria','temperatura','saturacion_oxigeno'] %}
+          {{ field_error(f) }}
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- ============ MOTIVO DE CONSULTA ============ -->
+    <section class="card" data-section="motivo">
+      <div class="card-head">
+        <span class="card-index">04</span>
+        <div>
+          <h2>Motivo de consulta</h2>
+          <p>Razón de la atención y estado actual.</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <label for="motivo_consulta">Motivo de consulta <em>*</em></label>
+          <input type="text" id="motivo_consulta" name="motivo_consulta" required maxlength="160"
+                 value="{{ data.get('motivo_consulta','') }}" placeholder="Ej. Dolor abdominal de 2 días de evolución">
+          {{ field_error('motivo_consulta') }}
+        </div>
+        <div class="field">
+          <label for="enfermedad_actual">Enfermedad actual</label>
+          <textarea id="enfermedad_actual" name="enfermedad_actual" rows="3"
+                    placeholder="Descripción detallada de la evolución del cuadro...">{{ data.get('enfermedad_actual','') }}</textarea>
+        </div>
+        <div class="grid-2">
+          <div class="field">
+            <label for="observaciones">Observaciones</label>
+            <textarea id="observaciones" name="observaciones" rows="2"
+                      placeholder="Notas adicionales...">{{ data.get('observaciones','') }}</textarea>
+          </div>
+          <div class="field">
+            <label for="medico_responsable">Médico responsable</label>
+            <input type="text" id="medico_responsable" name="medico_responsable" maxlength="80"
+                   value="{{ data.get('medico_responsable','') }}" placeholder="Nombre del profesional">
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <div class="form-actions">
+    <p class="required-note"><em>*</em> Campos obligatorios</p>
+    <div class="actions-buttons">
+      <button type="reset" class="btn btn-ghost">Limpiar</button>
+      <button type="submit" class="btn btn-primary">Guardar consulta</button>
+    </div>
+  </div>
+</form>
+{% endblock %}
