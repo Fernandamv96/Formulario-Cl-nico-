@@ -16,7 +16,7 @@ BASE_DIR = Path(__file__).resolve().parent
 DB_PATH = BASE_DIR / "clinic.db"
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "cambia-esta-clave-en-produccion"  # usar variable de entorno en prod
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "cambia-esta-clave-en-produccion")
 
 
 # ---------------------------------------------------------------------------
