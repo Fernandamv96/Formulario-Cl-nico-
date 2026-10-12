@@ -23,6 +23,7 @@ app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "cambia-esta-clave-en-pr
 # Conexión y esquema de la base de datos
 # ---------------------------------------------------------------------------
 
+
 def get_db():
     """Devuelve una conexión SQLite reutilizable dentro del contexto de la request."""
     if "db" not in g:
@@ -95,12 +96,22 @@ def init_db():
 # ---------------------------------------------------------------------------
 
 REQUIRED_FIELDS = [
-    "nombres", "apellidos", "tipo_documento", "numero_documento",
-    "fecha_nacimiento", "sexo", "motivo_consulta",
+    "nombres",
+    "apellidos",
+    "tipo_documento",
+    "numero_documento",
+    "fecha_nacimiento",
+    "sexo",
+    "motivo_consulta",
 ]
 
-INT_FIELDS = ["presion_sistolica", "presion_diastolica", "frecuencia_cardiaca",
-              "frecuencia_respiratoria", "saturacion_oxigeno"]
+INT_FIELDS = [
+    "presion_sistolica",
+    "presion_diastolica",
+    "frecuencia_cardiaca",
+    "frecuencia_respiratoria",
+    "saturacion_oxigeno",
+]
 FLOAT_FIELDS = ["temperatura", "peso", "talla"]
 
 RANGES = {
@@ -141,10 +152,19 @@ def validate_form(form):
         errors["numero_documento"] = "El número de documento no es válido."
 
     # Campos de texto opcionales
-    for field in ["telefono", "email", "direccion", "antecedentes_personales",
-                  "antecedentes_familiares", "alergias", "medicamentos_actuales",
-                  "antecedentes_quirurgicos", "enfermedad_actual", "observaciones",
-                  "medico_responsable"]:
+    for field in [
+        "telefono",
+        "email",
+        "direccion",
+        "antecedentes_personales",
+        "antecedentes_familiares",
+        "alergias",
+        "medicamentos_actuales",
+        "antecedentes_quirurgicos",
+        "enfermedad_actual",
+        "observaciones",
+        "medico_responsable",
+    ]:
         data[field] = (form.get(field) or "").strip()
 
     if data.get("email"):
@@ -201,7 +221,7 @@ def calcular_imc(peso, talla):
     if not peso or not talla:
         return None
     try:
-        return round(peso / (talla ** 2), 1)
+        return round(peso / (talla**2), 1)
     except ZeroDivisionError:
         return None
 
@@ -225,6 +245,7 @@ app.jinja_env.filters["vital_status"] = vital_status
 # Rutas
 # ---------------------------------------------------------------------------
 
+
 @app.route("/")
 def index():
     """Formulario de nueva consulta."""
@@ -237,20 +258,40 @@ def guardar():
 
     if errors:
         flash("Revisa los campos marcados en rojo antes de guardar.", "error")
-        return render_template("form.html", errors=errors, data=data,
-                                today=date.today().isoformat()), 400
+        return render_template(
+            "form.html", errors=errors, data=data, today=date.today().isoformat()
+        ), 400
 
     data["fecha_registro"] = datetime.now().isoformat(timespec="seconds")
 
     columns = [
-        "nombres", "apellidos", "tipo_documento", "numero_documento",
-        "fecha_nacimiento", "sexo", "telefono", "email", "direccion",
-        "antecedentes_personales", "antecedentes_familiares", "alergias",
-        "medicamentos_actuales", "antecedentes_quirurgicos",
-        "presion_sistolica", "presion_diastolica", "frecuencia_cardiaca",
-        "frecuencia_respiratoria", "temperatura", "saturacion_oxigeno",
-        "peso", "talla", "motivo_consulta", "enfermedad_actual",
-        "observaciones", "medico_responsable", "fecha_registro",
+        "nombres",
+        "apellidos",
+        "tipo_documento",
+        "numero_documento",
+        "fecha_nacimiento",
+        "sexo",
+        "telefono",
+        "email",
+        "direccion",
+        "antecedentes_personales",
+        "antecedentes_familiares",
+        "alergias",
+        "medicamentos_actuales",
+        "antecedentes_quirurgicos",
+        "presion_sistolica",
+        "presion_diastolica",
+        "frecuencia_cardiaca",
+        "frecuencia_respiratoria",
+        "temperatura",
+        "saturacion_oxigeno",
+        "peso",
+        "talla",
+        "motivo_consulta",
+        "enfermedad_actual",
+        "observaciones",
+        "medico_responsable",
+        "fecha_registro",
     ]
     placeholders = ", ".join("?" for _ in columns)
     values = [data.get(c) for c in columns]
