@@ -2,173 +2,127 @@
 
 # 🩺 MediForm
 
-### Formulario clínico digital — Flask + SQLite
+### Formulario clínico digital: Flask + SQLite
 
-Registro de consultas médicas con datos del paciente, antecedentes,
-signos vitales y motivo de consulta, en una interfaz moderna y responsive.
-
-[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![Flask](https://img.shields.io/badge/Flask-3.0-000000?logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
-[![SQLite](https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white)](https://www.sqlite.org/)
-[![License](https://img.shields.io/badge/License-MIT-green)](#licencia)
+[![CI](https://github.com/Fernandamv96/Formulario-Cl-nico-/actions/workflows/ci.yml/badge.svg)](https://github.com/Fernandamv96/Formulario-Cl-nico-/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/Fernandamv96/Formulario-Cl-nico-/actions/workflows/codeql.yml/badge.svg)](https://github.com/Fernandamv96/Formulario-Cl-nico-/actions/workflows/codeql.yml)
+[![Python](https://img.shields.io/badge/Python-3.10+-BD93F9?logo=python&logoColor=white)](https://www.python.org/)
+[![Flask](https://img.shields.io/badge/Flask-3.1-FF79C6?logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-BD93F9)](LICENSE)
 
 </div>
 
----
+> ⚠️ **Proyecto educativo. No usar con datos clínicos reales.**
+> No tiene autenticación y el endpoint `/api/consultas` devuelve todos los registros.
 
-## Índice
+## ¿Qué problema resuelve?
 
-- [Funcionalidades](#-funcionalidades)
-- [Vista previa](#-vista-previa)
-- [Estructura del proyecto](#-estructura-del-proyecto)
-- [Instalación local](#-instalación-local)
-- [Despliegue en producción](#-despliegue-en-producción-render)
-- [Rutas de la API](#-rutas-principales)
-- [Notas de seguridad](#-notas-para-producción)
-- [Roadmap](#-próximos-pasos-sugeridos)
+Digitaliza la ficha de una consulta médica: datos del paciente, antecedentes, signos vitales y motivo de consulta. Valida en el cliente y en el servidor, marca los signos vitales fuera de rango y calcula automáticamente la edad y el IMC.
 
----
+![Formulario de nueva consulta](docs/form.png)
 
-## ✨ Funcionalidades
+<details>
+<summary>Vista de detalle de una consulta (datos ficticios)</summary>
+
+![Detalle de una consulta](docs/detail.png)
+
+</details>
+
+## Funcionalidades
 
 | | |
 |---|---|
-| 🗂️ **Formulario por secciones** | Datos del paciente, antecedentes, signos vitales y motivo de consulta, organizados en tarjetas |
+| 🗂️ **Formulario por secciones** | Paciente, antecedentes, signos vitales y motivo de consulta |
 | ✅ **Validación doble** | En el cliente (feedback inmediato) y en el servidor (fuente de verdad) |
-| 💓 **Signos vitales inteligentes** | Detecta y resalta valores fuera de rango normal (presión, FC, FR, temperatura, saturación) |
-| 🔍 **Listado con búsqueda** | Filtra por nombre, apellido o número de documento |
-| 📋 **Vista de detalle** | Cálculo automático de edad e IMC por paciente |
-| 📱 **100% responsive** | Escritorio, tablet y móvil |
-| 🔌 **API JSON** | Endpoint de solo lectura para integraciones futuras |
+| 💓 **Signos vitales** | Resalta presión, FC, FR, temperatura y saturación fuera de rango |
+| 🔍 **Listado con búsqueda** | Por nombre, apellido o número de documento |
+| 📋 **Detalle** | Edad e IMC calculados |
+| 📱 **Responsive** | Escritorio, tablet y móvil |
 
-## 🖼️ Vista previa
+## Stack
 
-<div align="center">
-<table>
-<tr>
-<td width="50%">
+Python 3.10+ · Flask 3.1 · Flask-WTF (CSRF) · SQLite · Jinja2 · HTML/CSS/JS vanilla · gunicorn · pytest · ruff
 
-**Formulario de consulta**
-Tarjetas por sección con validación en vivo.
-
-</td>
-<td width="50%">
-
-**Signos vitales**
-Tira de captura estilo monitor, con alerta visual si un valor se sale de rango.
-
-</td>
-</tr>
-</table>
-</div>
-
-> 💡 Tip: agrega tus propias capturas de pantalla a una carpeta `screenshots/`
-> y enlázalas aquí con `![Formulario](screenshots/form.png)` para que el
-> README se vea aún mejor en GitHub.
-
-## 📁 Estructura del proyecto
-
-```
-clinical-form-app/
-├── app.py                   # Backend Flask (rutas, validación, SQLite)
-├── requirements.txt
-├── Procfile                 # Comando de arranque para despliegue (Render/Railway/Heroku)
-├── clinic.db                 # Se crea automáticamente al ejecutar (no se versiona)
-├── templates/
-│   ├── base.html             # Layout base (header, nav, mensajes flash)
-│   ├── form.html             # Formulario de nueva consulta
-│   ├── list.html              # Listado de consultas con búsqueda
-│   └── detail.html            # Detalle de una consulta
-└── static/
-    ├── css/style.css          # Diseño (tarjetas, signos vitales, responsive)
-    └── js/validation.js       # Validación en vivo del lado del cliente
-```
-
-## 🚀 Instalación local
-
-**Requisitos:** Python 3.10 o superior.
+## Cómo correrlo localmente
 
 ```bash
-# 1. Clonar el repositorio
-git clone https://github.com/Fernandamv96/<nombre-del-repo>.git
-cd <nombre-del-repo>
+git clone https://github.com/Fernandamv96/Formulario-Cl-nico-.git
+cd Formulario-Cl-nico-
+python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -r requirements-dev.txt
 
-# 2. Crear entorno virtual (recomendado)
-python -m venv venv
-source venv/bin/activate      # En Windows: venv\Scripts\activate
-
-# 3. Instalar dependencias
-pip install -r requirements.txt
-
-# 4. Ejecutar
-python app.py
+cp .env.example .env    # y define SECRET_KEY, o expórtala:
+export SECRET_KEY="$(python -c 'import secrets; print(secrets.token_hex(32))')"
+python app.py           # http://127.0.0.1:5000
 ```
 
-Abrir [http://localhost:5000](http://localhost:5000) en el navegador. La base
-de datos SQLite (`clinic.db`) se crea automáticamente en la primera ejecución.
+| Variable | Por defecto | Descripción |
+|----------|-------------|-------------|
+| `SECRET_KEY` | — (**obligatoria**) | Sin ella la app no arranca, salvo en modo debug, donde usa una clave efímera |
+| `FLASK_DEBUG` | `0` | `1` activa el modo debug (solo para desarrollo) |
+| `HOST` / `PORT` | `127.0.0.1` / `5000` | Interfaz y puerto de `python app.py` |
+| `DATABASE_PATH` | `./clinic.db` | Ruta del archivo SQLite |
 
-## ☁️ Despliegue en producción (Render)
+Tests y lint:
 
-[Render](https://render.com) ofrece un plan gratuito ideal para este proyecto.
+```bash
+pytest
+ruff check . && ruff format --check .
+```
 
-1. Sube este repositorio a GitHub (ya lo tienes ✅).
-2. Entra a [render.com](https://render.com) y crea una cuenta (puedes usar tu GitHub).
-3. Click en **New +** → **Web Service**.
-4. Selecciona este repositorio.
-5. Configura:
-   | Campo | Valor |
-   |---|---|
-   | **Runtime** | Python 3 |
-   | **Build Command** | `pip install -r requirements.txt` |
-   | **Start Command** | `gunicorn app:app` |
-6. Click en **Create Web Service** y espera el build (2-3 minutos).
-7. Render te entrega una URL pública como `https://mediform.onrender.com`.
+### Despliegue (Render u otro PaaS)
 
-> ⚠️ **Importante sobre SQLite en Render (plan gratuito):** el sistema de
-> archivos es efímero, es decir, cada vez que la app se reinicia o se
-> re-despliega, `clinic.db` vuelve a crearse vacío. Para producción real con
-> datos persistentes, usa un **Render Disk** (almacenamiento persistente,
-> plan pago) o migra a una base de datos administrada como PostgreSQL. Para
-> una demo o portafolio, el comportamiento actual es suficiente.
+Build: `pip install -r requirements.txt` · Start: `gunicorn app:app` (ver `Procfile`). Define `SECRET_KEY` en las variables de entorno del servicio. En el plan gratuito el disco es efímero, así que `clinic.db` se reinicia con cada deploy.
 
-## 🔌 Rutas principales
+## Rutas
 
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| `GET` | `/` | Formulario de nueva consulta |
-| `POST` | `/guardar` | Guarda la consulta en SQLite |
-| `GET` | `/consultas` | Listado (acepta `?q=` para buscar) |
-| `GET` | `/consultas/<id>` | Detalle de una consulta |
-| `POST` | `/consultas/<id>/eliminar` | Elimina una consulta |
-| `GET` | `/api/consultas` | Listado en formato JSON |
+| GET | `/` | Formulario de nueva consulta |
+| POST | `/guardar` | Guarda la consulta (requiere token CSRF) |
+| GET | `/consultas` | Listado (`?q=` para buscar) |
+| GET | `/consultas/<id>` | Detalle |
+| POST | `/consultas/<id>/eliminar` | Elimina (requiere token CSRF) |
+| GET | `/api/consultas` | Listado JSON (sin autenticación: solo para la demo) |
 
-## 🔒 Notas para producción
+## Seguridad
 
-- Cambia `app.config["SECRET_KEY"]` en `app.py` por un valor secreto real,
-  cargado desde una variable de entorno (`os.environ.get("SECRET_KEY")`).
-- Ya se ejecuta con `gunicorn` en producción (ver `Procfile`), en lugar de
-  `app.run(debug=True)`.
-- Si vas a manejar datos clínicos reales, evalúa requisitos de cifrado en
-  reposo, control de acceso y cumplimiento normativo local (ej. Ley 19.628
-  en Chile, HIPAA en EE. UU., etc.) antes de usarlo en un entorno real.
-- SQLite es adecuado para uso individual o de bajo volumen; para múltiples
-  usuarios concurrentes, considera migrar a PostgreSQL.
+- **CSRF** con Flask-WTF en todos los formularios POST.
+- **Headers**: Content-Security-Policy (sin scripts inline), `X-Content-Type-Options`, `X-Frame-Options: DENY` y `Referrer-Policy`.
+- **SQL parametrizado** (`?`) en todas las consultas, con un test de inyección.
+- **Configuración segura por defecto**: debug apagado, host `127.0.0.1` y `SECRET_KEY` obligatoria.
+- CI con ruff + pytest, CodeQL, Dependabot y gitleaks (pre-commit).
 
-## 🗺️ Próximos pasos sugeridos
+Para reportar vulnerabilidades, mira [SECURITY.md](SECURITY.md).
 
-- [ ] Autenticación de usuarios (login para el personal médico)
-- [ ] Exportar consultas a PDF
-- [ ] Editar un registro existente (hoy solo se puede ver/eliminar)
-- [ ] Paginación en el listado para grandes volúmenes de registros
-- [ ] Migración a PostgreSQL para despliegues con múltiples usuarios
+## Estructura del proyecto
+
+```
+├── app.py                 # Rutas, validación, SQLite y headers de seguridad
+├── templates/             # base, form, list, detail (Jinja2)
+├── static/css/style.css
+├── static/js/validation.js
+├── tests/                 # pytest: creación, validación, CSRF, headers, config
+├── requirements.txt       # producción (versiones fijadas)
+├── requirements-dev.txt   # + pytest y ruff
+└── Procfile               # gunicorn app:app
+```
+
+## Qué aprendí
+
+- A validar en dos capas sin confiar nunca solo en el cliente.
+- Por qué CSRF importa aunque no haya login, y cómo probarlo con pytest.
+- Que una CSP estricta obliga a sacar los `onsubmit="..."` inline a JavaScript.
+- Que `debug=True` con `host="0.0.0.0"` expone la consola interactiva de Werkzeug a toda la red.
+- A escribir tests que aíslan la base de datos con `tmp_path`.
+
+## Roadmap
+
+- [ ] Autenticación del personal y proteger `/api/consultas`
+- [ ] Editar registros (hoy solo se pueden ver y eliminar)
+- [ ] Paginación del listado
+- [ ] Migración a PostgreSQL
 
 ## Licencia
 
-Este proyecto se entrega sin licencia formal específica; agrega un archivo
-`LICENSE` (por ejemplo MIT) si planeas compartirlo o reutilizarlo públicamente.
-
----
-
-<div align="center">
-<sub>MediForm · Registro clínico interno</sub>
-</div>
+[MIT](LICENSE) © 2026 Fernanda (Fernandamv96)
