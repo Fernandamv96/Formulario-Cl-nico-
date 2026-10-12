@@ -2,6 +2,14 @@
  * Validación de formulario del lado del cliente.
  * Complementa (no reemplaza) la validación del servidor en app.py.
  */
+
+// Confirmación para formularios destructivos (reemplaza onsubmit inline, bloqueado por la CSP).
+document.querySelectorAll("form[data-confirm]").forEach(function (f) {
+  f.addEventListener("submit", function (event) {
+    if (!window.confirm(f.dataset.confirm)) event.preventDefault();
+  });
+});
+
 (function () {
   const form = document.getElementById("clinicalForm");
   if (!form) return;
