@@ -8,7 +8,8 @@
     <h1>{{ c['nombres'] }} {{ c['apellidos'] }}</h1>
     <p class="subtitle">{{ c['tipo_documento'] }} · {{ c['numero_documento'] }} · {{ c['fecha_nacimiento']|edad }} años · {{ c['sexo'] }}</p>
   </div>
-  <form method="POST" action="{{ url_for('eliminar', consulta_id=c['id']) }}" onsubmit="return confirm('¿Eliminar este registro de forma permanente?');">
+  <form method="POST" action="{{ url_for('eliminar', consulta_id=c['id']) }}" data-confirm="¿Eliminar este registro de forma permanente?">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <button type="submit" class="btn btn-danger btn-compact">Eliminar</button>
   </form>
 </div>

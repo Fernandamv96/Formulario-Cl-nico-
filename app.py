@@ -6,17 +6,67 @@ antecedentes, signos vitales y motivo de consulta.
 Persistencia en SQLite (archivo local, sin servidor externo).
 """
 
-import sqlite3
-from datetime import datetime, date
-from pathlib import Path
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash, g, jsonify
+import secrets
+import sqlite3
+from datetime import date, datetime
+from pathlib import Path
+
+from flask import Flask, flash, g, jsonify, redirect, render_template, request, url_for
+from flask_wtf.csrf import CSRFProtect
 
 BASE_DIR = Path(__file__).resolve().parent
-DB_PATH = BASE_DIR / "clinic.db"
+
+
+def env_flag(name, default=False):
+    """Lee una variable de entorno booleana ("1", "true", "yes", "on")."""
+    value = os.environ.get(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+DEBUG = env_flag("FLASK_DEBUG")
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "cambia-esta-clave-en-produccion")
+app.config["DATABASE"] = os.environ.get("DATABASE_PATH", str(BASE_DIR / "clinic.db"))
+
+_secret_key = os.environ.get("SECRET_KEY")
+if not _secret_key:
+    if not DEBUG:
+        raise RuntimeError(
+            "SECRET_KEY no está definido. Configúralo en el entorno antes de iniciar la app "
+            "(ver .env.example). Para desarrollo local puedes usar FLASK_DEBUG=1."
+        )
+    # Solo en desarrollo: clave efímera (las sesiones se invalidan al reiniciar).
+    _secret_key = secrets.token_hex(32)
+app.config["SECRET_KEY"] = _secret_key
+
+csrf = CSRFProtect(app)
+
+# Política de seguridad de contenido: solo recursos propios + Google Fonts.
+CONTENT_SECURITY_POLICY = "; ".join(
+    [
+        "default-src 'self'",
+        "script-src 'self'",
+        "style-src 'self' https://fonts.googleapis.com",
+        "font-src 'self' https://fonts.gstatic.com",
+        "img-src 'self' data:",
+        "object-src 'none'",
+        "base-uri 'self'",
+        "form-action 'self'",
+        "frame-ancestors 'none'",
+    ]
+)
+
+
+@app.after_request
+def set_security_headers(response):
+    response.headers.setdefault("Content-Security-Policy", CONTENT_SECURITY_POLICY)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    return response
 
 
 # ---------------------------------------------------------------------------
@@ -27,7 +77,7 @@ app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "cambia-esta-clave-en-pr
 def get_db():
     """Devuelve una conexión SQLite reutilizable dentro del contexto de la request."""
     if "db" not in g:
-        g.db = sqlite3.connect(DB_PATH)
+        g.db = sqlite3.connect(app.config["DATABASE"])
         g.db.row_factory = sqlite3.Row
         g.db.execute("PRAGMA foreign_keys = ON")
     return g.db
@@ -85,7 +135,7 @@ CREATE TABLE IF NOT EXISTS consultas (
 
 
 def init_db():
-    db = sqlite3.connect(DB_PATH)
+    db = sqlite3.connect(app.config["DATABASE"])
     db.executescript(SCHEMA)
     db.commit()
     db.close()
@@ -123,6 +173,42 @@ RANGES = {
     "temperatura": (36.0, 37.5),
     "saturacion_oxigeno": (95, 100),
 }
+
+
+# Columnas fijas del INSERT. Los valores siempre van como parámetros (?), nunca interpolados.
+INSERT_COLUMNS = (
+    "nombres",
+    "apellidos",
+    "tipo_documento",
+    "numero_documento",
+    "fecha_nacimiento",
+    "sexo",
+    "telefono",
+    "email",
+    "direccion",
+    "antecedentes_personales",
+    "antecedentes_familiares",
+    "alergias",
+    "medicamentos_actuales",
+    "antecedentes_quirurgicos",
+    "presion_sistolica",
+    "presion_diastolica",
+    "frecuencia_cardiaca",
+    "frecuencia_respiratoria",
+    "temperatura",
+    "saturacion_oxigeno",
+    "peso",
+    "talla",
+    "motivo_consulta",
+    "enfermedad_actual",
+    "observaciones",
+    "medico_responsable",
+    "fecha_registro",
+)
+INSERT_CONSULTA_SQL = (
+    "INSERT INTO consultas (" + ", ".join(INSERT_COLUMNS) + ") "
+    "VALUES (" + ", ".join("?" * len(INSERT_COLUMNS)) + ")"
+)
 
 
 def validate_form(form):
@@ -167,9 +253,9 @@ def validate_form(form):
     ]:
         data[field] = (form.get(field) or "").strip()
 
-    if data.get("email"):
-        if "@" not in data["email"] or "." not in data["email"].split("@")[-1]:
-            errors["email"] = "El correo electrónico no es válido."
+    email = data.get("email")
+    if email and ("@" not in email or "." not in email.split("@")[-1]):
+        errors["email"] = "El correo electrónico no es válido."
 
     # Numéricos enteros
     for field in INT_FIELDS:
@@ -264,43 +350,8 @@ def guardar():
 
     data["fecha_registro"] = datetime.now().isoformat(timespec="seconds")
 
-    columns = [
-        "nombres",
-        "apellidos",
-        "tipo_documento",
-        "numero_documento",
-        "fecha_nacimiento",
-        "sexo",
-        "telefono",
-        "email",
-        "direccion",
-        "antecedentes_personales",
-        "antecedentes_familiares",
-        "alergias",
-        "medicamentos_actuales",
-        "antecedentes_quirurgicos",
-        "presion_sistolica",
-        "presion_diastolica",
-        "frecuencia_cardiaca",
-        "frecuencia_respiratoria",
-        "temperatura",
-        "saturacion_oxigeno",
-        "peso",
-        "talla",
-        "motivo_consulta",
-        "enfermedad_actual",
-        "observaciones",
-        "medico_responsable",
-        "fecha_registro",
-    ]
-    placeholders = ", ".join("?" for _ in columns)
-    values = [data.get(c) for c in columns]
-
     db = get_db()
-    db.execute(
-        f"INSERT INTO consultas ({', '.join(columns)}) VALUES ({placeholders})",
-        values,
-    )
+    db.execute(INSERT_CONSULTA_SQL, [data.get(c) for c in INSERT_COLUMNS])
     db.commit()
 
     flash("Consulta registrada correctamente.", "success")
@@ -356,7 +407,11 @@ def api_consultas():
 
 if __name__ == "__main__":
     init_db()
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(
+        debug=DEBUG,
+        host=os.environ.get("HOST", "127.0.0.1"),
+        port=int(os.environ.get("PORT", "5000")),
+    )
 else:
     # Asegura que la BD exista también cuando se importa (ej. gunicorn)
     init_db()
