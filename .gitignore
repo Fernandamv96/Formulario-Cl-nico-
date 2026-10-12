@@ -6,3 +6,13 @@ env/
 clinic.db
 instance/
 .DS_Store
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Tooling
+.pytest_cache/
+.ruff_cache/
+*.db
